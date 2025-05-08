@@ -1,0 +1,71 @@
+services:
+  mysql:
+    image: 'mysql:8.0'
+    container_name: mysql8
+    ports:
+      - '${DB_PORT:-3306}:3306'
+    environment:
+      MYSQL_ROOT_PASSWORD: '${DB_ROOT_PASSWORD}'
+      MYSQL_ROOT_HOST: '%'
+      MYSQL_DATABASE: '${DB_DATABASE}'
+      MYSQL_USER: '${DB_USERNAME}'
+      MYSQL_PASSWORD: '${DB_PASSWORD}'
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
+    volumes:
+      - '${DATA_PATH}/mysql:/var/lib/mysql'
+      - './database/mysql/my-custom-sql-mode.cnf:/etc/mysql/conf.d/my-custom-sql-mode.cnf'
+      - './database/mysql/create-testing-database.sh:/docker-entrypoint-initdb.d/10-create-testing-database.sh'
+    networks:
+      shanhai-short-sory_short_api_net_sail:
+        ipv4_address: 172.28.0.7
+    healthcheck:
+      test:
+        - CMD
+        - mysqladmin
+        - ping
+        - '-p${DB_PASSWORD}'
+      retries: 3
+      timeout: 5s
+  redis:
+    image: 'redis:alpine'
+    container_name: redis
+    ports:
+      - '${REDIS_PORT:-6379}:6379'
+    volumes:
+      - '${DATA_PATH}/redis:/data'
+    environment:
+      REDIS_PASSWORD: '${REDIS_PASSWORD}'
+    command: redis-server --requirepass '${REDIS_PASSWORD}'
+    networks:
+      shanhai-short-sory_short_api_net_sail:
+        ipv4_address: 172.28.0.8
+    healthcheck:
+      test:
+        - CMD
+        - redis-cli
+        - -a
+        - '${REDIS_PASSWORD}'
+        - ping
+      retries: 3
+      timeout: 5s
+  rabbit-mq:
+    image: 'rabbitmq:3.13-management'
+    container_name: "rabbit-3.13"
+    volumes:
+      - '${DATA_PATH}/rabbitmq/data:/data'
+      - '${DATA_PATH}/rabbitmq/myplugins:/myplugins'
+    ports:
+      - '${RABBIT_MQ_CLIENT_PORT:-5672}:5672'
+      - '${RABBIT_MQ_WEB_PORT:-15672}:15672'
+    environment:
+      RABBITMQ_DEFAULT_USER: "${RABBIT_MQ_USER:-admin}"
+      RABBITMQ_DEFAULT_PASS: "${RABBIT_MQ_PASSWORD:-rW9pJ8lN9gU3oH7nee}"
+      RABBITMQ_DEFAULT_VHOST: /
+    networks:
+      shanhai-short-sory_short_api_net_sail:
+        ipv4_address: 172.28.0.9
+
+
+networks:
+  shanhai-short-sory_short_api_net_sail:
+    external: true

@@ -22,7 +22,7 @@ services:
     privileged: true
     deploy:
       replicas: 1
-    entrypoint: sh -c "tail -f /dev/null"
+    entrypoint: ["php", "/webser/www/${PROJECT_NAME}/bin/hyperf.php", "start"]
 
 networks:
   xzy_net_sail:
