@@ -24,7 +24,7 @@ services:
     privileged: true
     deploy:
       replicas: 1
-    entrypoint: ["sh", "-c", "php /webser/www/${PROJECT_NAME}/bin/hyperf.php start && sh /start.sh"]
+    entrypoint: ["php", "/webser/www/${PROJECT_NAME}/bin/hyperf.php","start"]
 
 networks:
   xzy_net_sail:

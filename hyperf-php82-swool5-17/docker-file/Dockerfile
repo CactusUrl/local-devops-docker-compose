@@ -51,9 +51,6 @@ RUN apk add tzdata && \
 COPY conf/nginx.conf /etc/nginx/nginx.conf
 COPY conf/php.ini /usr/local/etc/php/php.ini
 
+RUN mkdir -p ${WEB_ROOT} ${LOG_PATH} ${DATA_PATH} ${RUNTIME_PATH} && chown -R www-data:www-data /webser
+
 WORKDIR ${WEB_ROOT}
-
-COPY scripts/start.sh /start.sh
-
-RUN chmod +x /start.sh
-
