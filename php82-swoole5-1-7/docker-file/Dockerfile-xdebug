@@ -50,7 +50,6 @@ RUN apk add tzdata && \
 
 COPY conf/nginx.conf /etc/nginx/nginx.conf
 COPY conf/php.ini /usr/local/etc/php/php.ini
-COPY conf/www.conf /usr/local/etc/php-fpm.d/www.conf
 COPY conf/supervisord.conf /etc/supervisord.conf
 
 WORKDIR ${WEB_ROOT}

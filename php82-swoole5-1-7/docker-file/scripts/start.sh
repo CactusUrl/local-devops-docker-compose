@@ -3,7 +3,7 @@
 mkdir -p ${WEB_ROOT} ${LOG_PATH} ${DATA_PATH} ${RUNTIME_PATH} && chown -R www-data:www-data /webser
 
 # 目录、权限
-for logdir in nginx php php-fpm supervisor;
+for logdir in nginx php hyperf supervisor;
 do
     if [ ! -d ${LOG_PATH}/${logdir} ]; then
         mkdir -p ${LOG_PATH}/${logdir}

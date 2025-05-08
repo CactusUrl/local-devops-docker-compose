@@ -28,7 +28,7 @@ RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS \
         --enable-openssl       \
         --enable-sockets && \
     docker-php-ext-install -j$(nproc) swoole && \
-    rm -f swoole.tar.gz && rm -rf /etc/nginx/conf.d/* \
+    rm -f swoole.tar.gz && rm -rf /etc/nginx/conf.d/* && \
     # 安装排错工具-生产环境可不需要
     apk update && apk add --no-cache tcpdump busybox-extras strace nginx supervisor && \
     apk del .build-deps $PHPIZE_DEPS && rm -rf /var/cache/apk/* && docker-php-source delete
@@ -44,7 +44,6 @@ RUN apk add tzdata && \
 
 COPY conf/nginx.conf /etc/nginx/nginx.conf
 COPY conf/php.ini /usr/local/etc/php/php.ini
-COPY conf/www.conf /usr/local/etc/php-fpm.d/www.conf
 COPY conf/supervisord.conf /etc/supervisord.conf
 
 WORKDIR ${WEB_ROOT}

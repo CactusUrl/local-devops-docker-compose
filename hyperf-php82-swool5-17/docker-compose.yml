@@ -1,0 +1,29 @@
+version: '3.7'
+services:
+  oms-hyperf:
+    build:
+      context: ./docker-file
+      dockerfile: Dockerfile
+    init: true
+    dns:
+      - 8.8.8.8  # 公共DNS服务器
+    environment:
+      APP_ENV: "${APP_ENV:-dev}"
+    ports:
+      - "80:${APP_PORT:-9501}"
+      - 9502:9502
+      - 9503:9503
+    volumes:
+      - "${OMS_PROJECT_PATH}:/webser/www/"
+    container_name: "oms"
+    networks:
+      - xzy_net_sail
+    restart: "always"
+    privileged: true
+    deploy:
+      replicas: 1
+    entrypoint: sh -c "tail -f /dev/null"
+
+networks:
+  xzy_net_sail:
+    driver: bridge
