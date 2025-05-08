@@ -28,10 +28,10 @@ RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS \
         --enable-openssl       \
         --enable-sockets && \
     docker-php-ext-install -j$(nproc) swoole && \
-    rm -f swoole.tar.gz && rm -rf /etc/nginx/conf.d/* && \
+    rm -f swoole.tar.gz && \
     # 安装排错工具-生产环境可不需要
     apk update && apk add --no-cache libstdc++ libpq libzip libpng nginx tcpdump busybox-extras strace && \
-    apk del .build-deps $PHPIZE_DEPS && rm -rf /var/cache/apk/* && docker-php-source delete \
+    apk del .build-deps $PHPIZE_DEPS && rm -rf /var/cache/apk/* && docker-php-source delete && rm -rf /etc/nginx/conf.d/* \
     #composer安装
     && php -r "copy('https://install.phpcomposer.com/installer', 'composer-setup.php');" \
     && php composer-setup.php \
@@ -56,6 +56,4 @@ WORKDIR ${WEB_ROOT}
 COPY scripts/start.sh /start.sh
 
 RUN chmod +x /start.sh
-
-CMD ["/start.sh"]
 

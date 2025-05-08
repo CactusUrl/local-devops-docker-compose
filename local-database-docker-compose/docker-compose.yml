@@ -16,8 +16,7 @@ services:
       - './database/mysql/my-custom-sql-mode.cnf:/etc/mysql/conf.d/my-custom-sql-mode.cnf'
       - './database/mysql/create-testing-database.sh:/docker-entrypoint-initdb.d/10-create-testing-database.sh'
     networks:
-      shanhai-short-sory_short_api_net_sail:
-        ipv4_address: 172.28.0.7
+      - middleware-db_middleware-sail
     healthcheck:
       test:
         - CMD
@@ -37,8 +36,7 @@ services:
       REDIS_PASSWORD: '${REDIS_PASSWORD}'
     command: redis-server --requirepass '${REDIS_PASSWORD}'
     networks:
-      shanhai-short-sory_short_api_net_sail:
-        ipv4_address: 172.28.0.8
+      - middleware-db_middleware-sail
     healthcheck:
       test:
         - CMD
@@ -62,10 +60,9 @@ services:
       RABBITMQ_DEFAULT_PASS: "${RABBIT_MQ_PASSWORD:-rW9pJ8lN9gU3oH7nee}"
       RABBITMQ_DEFAULT_VHOST: /
     networks:
-      shanhai-short-sory_short_api_net_sail:
-        ipv4_address: 172.28.0.9
+      - middleware-db_middleware-sail
 
 
 networks:
-  shanhai-short-sory_short_api_net_sail:
+  middleware-db_middleware-sail:
     external: true

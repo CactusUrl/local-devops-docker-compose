@@ -11,6 +11,5 @@ do
     fi
 done
 
-
 # 通过 supervisor 启动服务
 # exec /usr/bin/supervisord -n -c /etc/supervisord.conf
