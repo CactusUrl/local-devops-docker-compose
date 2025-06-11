@@ -15,7 +15,7 @@ RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS \
     sysvshm pdo_pgsql && \
     pecl channel-update pecl.php.net && \
     # 安装二进制数据序列化扩展
-    pecl install igbinary msgpack  && docker-php-ext-enable igbinary msgpack && \
+    pecl install igbinary msgpack xlswriter  && docker-php-ext-enable igbinary msgpack xlswriter && \
     pecl install --configureoptions 'enable-redis-lzf="no" enable-redis-zstd="no"' redis-6.1.0 && \
     # PHP extension Redis swoole
     docker-php-ext-enable redis && \
