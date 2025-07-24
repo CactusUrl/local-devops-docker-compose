@@ -11,7 +11,7 @@ RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS \
     libzip-dev libpq-dev libjpeg-turbo-dev libjpeg-turbo freetype rabbitmq-c \
     libmcrypt libldap logrotate && \
     # 扩展依赖
-    docker-php-ext-install bcmath pdo_mysql gd zip opcache pcntl sockets sysvmsg sysvsem \
+    docker-php-ext-install bcmath pdo_mysql gd zip opcache pcntl sockets sysvmsg sysvsem soap \
     sysvshm pdo_pgsql && \
     pecl channel-update pecl.php.net && \
     # 安装二进制数据序列化扩展
