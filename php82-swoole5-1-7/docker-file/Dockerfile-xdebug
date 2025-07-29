@@ -8,10 +8,10 @@ RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
 RUN apk update && apk add --no-cache --virtual .build-deps $PHPIZE_DEPS \
     zlib-dev libxml2-dev freetype-dev curl-dev openssl-dev \
     linux-headers brotli-dev  pcre-dev pcre2-dev sqlite-dev \
-    libzip-dev libpq-dev libjpeg-turbo-dev gettext-dev libintl libpq libjpeg-turbo freetype libzip libpng rabbitmq-c \
-    libmcrypt libldap logrotate && \
+    libzip-dev libpq-dev libjpeg-turbo-dev libintl libpq libjpeg-turbo freetype libzip libpng rabbitmq-c \
+    libmcrypt libldap gettext-dev logrotate && \
     # 扩展依赖
-    docker-php-ext-install gettext bcmath pdo_mysql gd zip opcache pcntl sockets sysvmsg sysvsem \
+    docker-php-ext-install gettext bcmath pdo_mysql gd zip opcache pcntl sockets sysvmsg sysvsem soap \
     sysvshm pdo_pgsql && \
     pecl channel-update pecl.php.net && \
     # 安装二进制数据序列化扩展

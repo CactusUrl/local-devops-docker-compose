@@ -11,7 +11,7 @@ RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS \
     libzip-dev libpq-dev libjpeg-turbo-dev libjpeg-turbo freetype rabbitmq-c \
     libmcrypt libldap logrotate && \
     # 扩展依赖
-    docker-php-ext-install bcmath pdo_mysql gd zip opcache pcntl sockets sysvmsg sysvsem \
+    docker-php-ext-install bcmath pdo_mysql gd zip opcache pcntl sockets sysvmsg sysvsem soap \
     sysvshm pdo_pgsql && \
     pecl channel-update pecl.php.net && \
     # 安装二进制数据序列化扩展
@@ -32,7 +32,7 @@ RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS \
     # 本地镜像，增加xdebug调试
     pecl install xdebug && docker-php-ext-enable xdebug && \
     # 安装排错工具-生产环境可不需要
-    apk update && apk add --no-cache libstdc++ libpq libzip libpng nginx tcpdump busybox-extras strace && \
+    apk update && apk add --no-cache libstdc++ libpq libzip libpng tcpdump busybox-extras strace && \
     apk del .build-deps $PHPIZE_DEPS && rm -rf /var/cache/apk/* && docker-php-source delete && rm -rf /etc/nginx/conf.d/* \
     #composer安装
     && php -r "copy('https://install.phpcomposer.com/installer', 'composer-setup.php');" \
