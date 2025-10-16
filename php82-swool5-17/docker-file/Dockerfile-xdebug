@@ -32,7 +32,7 @@ RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS \
     # 本地镜像，增加xdebug调试
     pecl install xdebug && docker-php-ext-enable xdebug && \
     # 安装排错工具-生产环境可不需要
-    apk update && apk add --no-cache libstdc++ libpq libzip libpng tcpdump busybox-extras strace && \
+    apk update && apk add --no-cache libstdc++ libpq libzip libpng tcpdump busybox-extras strace git && \
     apk del .build-deps $PHPIZE_DEPS && rm -rf /var/cache/apk/* && docker-php-source delete && rm -rf /etc/nginx/conf.d/* \
     #composer安装
     && php -r "copy('https://install.phpcomposer.com/installer', 'composer-setup.php');" \
@@ -44,6 +44,7 @@ RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS \
 RUN echo "xdebug.mode = debug" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini && \
     echo "xdebug.client_host = host.docker.internal" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini && \
     echo "xdebug.client_port = 9003" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini && \
+    echo "swoole.enable_fiber_mock = On" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini && \
     # 修改 swoole.use_shortname 配置
     echo "swoole.use_shortname = Off" >> /usr/local/etc/php/conf.d/docker-php-ext-swoole.ini
 

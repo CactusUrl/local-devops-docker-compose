@@ -30,7 +30,7 @@ RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS \
     docker-php-ext-install -j$(nproc) swoole && \
     rm -f swoole.tar.gz && \
     # 安装排错工具-生产环境可不需要
-    apk update && apk add --no-cache libstdc++ libpq libzip libpng tcpdump busybox-extras strace && \
+    apk update && apk add --no-cache libstdc++ libpq libzip libpng tcpdump busybox-extras strace git && \
     apk del .build-deps $PHPIZE_DEPS && rm -rf /var/cache/apk/* && docker-php-source delete && rm -rf /etc/nginx/conf.d/* \
     #composer安装
     && php -r "copy('https://install.phpcomposer.com/installer', 'composer-setup.php');" \
