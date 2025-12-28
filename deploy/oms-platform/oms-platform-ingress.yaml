@@ -2,24 +2,63 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   annotations:
-    alb.ingress.kubernetes.io/ssl-redirect: "true"
+    alb.ingress.kubernetes.io/enable-cors: 'true'
+    alb.ingress.kubernetes.io/cors-allow-credentials: 'true'
+    alb.ingress.kubernetes.io/cors-allow-methods: 'GET, POST, OPTIONS, PUT, DELETE'
+    alb.ingress.kubernetes.io/cors-allow-origin: 'https://*.westmonth.com,https://westmonth.com,https://*.cloudkra.com,https://cloudkra.com,https://*.moonwhs.com'
+    alb.ingress.kubernetes.io/cors-allow-headers: 'X-Business-Name,Authorization,User-Agent,Keep-Alive,Content-Type,Accept-Language,Locale,Access-Token,Appid,Signature,Timestamp,Power,X-xsrf-token,Locale,Platform,X-Tenant-ID,X-App-Code'
+    alb.ingress.kubernetes.io/rewrite-target: /$1
   labels:
-    app: oms-platform-ingress
-  name: oms-platform-ingress
-  namespace: supply-group
+    app: api.cloudkra.com
+  name: api.cloudkra.com
+  namespace: westmonth
 spec:
   ingressClassName: alb
   rules:
-  - host: api.cloudkra.com
-    http:
-      paths:
-      - backend:
-          service:
-            name: oms-platform-svc
-            port:
-              number: 8080
-        path: /oms/
-        pathType: Prefix
+    - host: api.cloudkra.com
+      http:
+        paths:
+
+          - backend:
+              service:
+                name: supply-group-oms-platform-svc
+                port:
+                  number: 9501
+            path: /oms/(.*)
+            pathType: Prefix
+
+          - backend:
+              service:
+                name: ai-draw-svc-svc
+                port:
+                  number: 9501
+            path: /ai/draw/(.*)
+            pathType: Prefix
+
+          - backend:
+              service:
+                name: supply-group-tms-backend-svc
+                port:
+                  number: 9501
+            path: /tms/(.*)
+            pathType: Prefix
+
+          - backend:
+              service:
+                name: ops-proxies-nginx-to-external-wms
+                port:
+                  number: 8080
+            path: /wms/(.*)
+            pathType: Prefix
+
+          - backend:
+              service:
+                name: supply-group-oms-open-callback-svc
+                port:
+                  number: 8080
+            path: /open-callback/(.*)
+            pathType: Prefix
+
   tls:
-  - hosts:
-    - api.cloudkra.com
+    - hosts:
+        - api.cloudkra.com
