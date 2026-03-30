@@ -11,6 +11,7 @@ services:
       MYSQL_USER: '${DB_USERNAME}'
       MYSQL_PASSWORD: '${DB_PASSWORD}'
       MYSQL_ALLOW_EMPTY_PASSWORD: 1
+      TZ: Asia/Shanghai
     volumes:
       - '${DATA_PATH}/mysql:/var/lib/mysql'
       - './database/mysql/my-custom-sql-mode.cnf:/etc/mysql/conf.d/my-custom-sql-mode.cnf'
@@ -18,11 +19,7 @@ services:
     networks:
       - middleware-db_middleware-sail
     healthcheck:
-      test:
-        - CMD
-        - mysqladmin
-        - ping
-        - '-p${DB_PASSWORD}'
+      test: ["CMD", "mysqladmin", "ping", "-p${DB_PASSWORD}"]
       retries: 3
       timeout: 5s
   redis:
@@ -38,12 +35,7 @@ services:
     networks:
       - middleware-db_middleware-sail
     healthcheck:
-      test:
-        - CMD
-        - redis-cli
-        - -a
-        - '${REDIS_PASSWORD}'
-        - ping
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       retries: 3
       timeout: 5s
   rabbit-mq:
@@ -65,4 +57,5 @@ services:
 
 networks:
   middleware-db_middleware-sail:
-    external: true
+    driver: bridge
+#    external: true
