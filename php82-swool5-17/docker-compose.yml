@@ -13,9 +13,9 @@ services:
       - 9502:9502
       - 9503:9503
     volumes:
-      - "${OMS_PROJECT_PATH}:/webser/www/"
+      - "${BASE_PROJECT_PATH}:/webser/www/"
       - "${LOG_DIR}:/webser/logs/"
-    container_name: "oms"
+    container_name: "base-svc"
     networks:
       xzy_net_sail:
         ipv4_address: 172.169.0.21
@@ -31,7 +31,10 @@ services:
 #    entrypoint: sh -c "composer install && php ./bin/hyperf.php start" #首次项目初始化使用这个命令
     #    entrypoint: ["tail", "-f","/dev/null"]
     #    entrypoint: ["php", "./bin/hyperf.php", "start"] # compose install完vendor之后使用这个，不用浪费每次的compose install时间
-    entrypoint: sh -c "mkdir -p /webser/logs/runtime && php ./bin/hyperf.php server:watch >> /webser/logs/runtime/watch.log 2>&1" # compose install完vendor之后使用这个，不用浪费每次的compose install时间,同时追加吸入日志采集
+    entrypoint: [ "tail", "-f","/dev/null" ]
+    #    entrypoint: ["php", "./bin/hyperf.php", "start"] # compose install完vendor之后使用这个，不用浪费每次的compose install时间
+    #    entrypoint: ["php", "./bin/hyperf.php", "server:watch"] # compose install完vendor之后使用这个，不用浪费每次的compose install时间
+    #    entrypoint: sh -c "mkdir -p /webser/logs/runtime && php ./bin/hyperf.php server:watch >> /webser/logs/runtime/watch.log 2>&1"
 
 networks:
   xzy_net_sail:
@@ -39,4 +42,4 @@ networks:
     ipam:
       config:
         - subnet: 172.169.0.0/24
-          gateway: 172.169.0.1  # 显式指定网关
+          gateway: 172.169.0.136  # 显式指定网关
