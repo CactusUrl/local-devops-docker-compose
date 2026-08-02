@@ -53,6 +53,24 @@ services:
       RABBITMQ_DEFAULT_VHOST: /
     networks:
       - middleware-db_middleware-sail
+  mongo-db:
+    image: mongo:7.0
+    container_name: mongodb
+    restart: always
+    ports:
+      - "${MONGO_DB_PORT}:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: "${MONGO_DB_USER:-root}"
+      MONGO_INITDB_ROOT_PASSWORD: "${MONGO_DB_PASSSWORD:-wera87914Ls}"
+      TZ: Asia/Shanghai
+    volumes:
+      - '${DATA_PATH}/mongo-data:/data/db'
+    networks:
+      - middleware-db_middleware-sail
+    healthcheck:
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')", "-u", "${MONGO_DB_USER:-root}", "-p", "${MONGO_DB_PASSSWORD:-wera87914Ls}", "--authenticationDatabase", "admin" ]
+      retries: 3
+      timeout: 8s
 
 
 networks:
