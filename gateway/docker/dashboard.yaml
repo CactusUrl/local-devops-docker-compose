@@ -1,0 +1,13 @@
+conf:
+  listen:
+    port: 9000
+  database:
+    mysql:
+      host: mysql
+      port: 3306
+      dbname: apisix_dashboard
+      username: root
+      password: "by!QbPcbk5"
+  etcd:
+    endpoints:
+      - "http://etcd:2379"

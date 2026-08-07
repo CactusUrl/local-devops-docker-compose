@@ -1,0 +1,29 @@
+version: "3.8"
+
+networks:
+  middleware-db_middleware-sail:
+    external: true # 引用base创建的外部网络
+
+services:
+  apisix:
+    image: apache/apisix:3.17.0
+    container_name: apisix-gateway
+    restart: always
+    ports:
+      - "9080:9080"
+      - "9091:9091"
+    volumes:
+      - ./config.yaml:/usr/local/apisix/conf/config.yaml
+    networks:
+      - middleware-db_middleware-sail
+
+  apisix-dashboard:
+    image: apache/apisix-dashboard:3.17.0
+    container_name: apisix-dashboard
+    restart: always
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./dashboard.yaml:/usr/local/apisix-dashboard/conf/dashboard.yaml
+    networks:
+      - middleware-db_middleware-sail

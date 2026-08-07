@@ -1,0 +1,8 @@
+deployment:
+  role: traditional
+  role_traditional:
+    config_provider: etcd
+  etcd:
+    host:
+      - "http://etcd:2379"
+    prefix: "/apisix"
