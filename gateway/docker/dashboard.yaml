@@ -1,13 +1,23 @@
 conf:
   listen:
     port: 9000
-  database:
-    mysql:
-      host: mysql
-      port: 3306
-      dbname: apisix_dashboard
-      username: root
-      password: "by!QbPcbk5"
   etcd:
     endpoints:
-      - "http://etcd:2379"
+      - etcd:2379
+    prefix: /apisix
+  log:
+    error_log:
+      level: warn
+      file_path: logs/error.log
+    access_log:
+      file_path: logs/access.log
+
+authentication:
+  secret: apisix-dashboard-local-secret
+  expire_time: 3600
+  users:
+    - username: admin
+      password: admin
+
+oidc:
+  enabled: false

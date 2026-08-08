@@ -10,20 +10,28 @@ services:
     container_name: apisix-gateway
     restart: always
     ports:
-      - "9080:9080"
-      - "9091:9091"
+      - "127.0.0.1:9180:9180/tcp"
+      - "9080:9080/tcp"
+      - "9091:9091/tcp"
+      - "9443:9443/tcp"
     volumes:
       - ./config.yaml:/usr/local/apisix/conf/config.yaml
     networks:
       - middleware-db_middleware-sail
 
   apisix-dashboard:
-    image: apache/apisix-dashboard:3.17.0
+    image: apache/apisix-dashboard:latest
     container_name: apisix-dashboard
-    restart: always
+#    restart: always
     ports:
       - "9000:9000"
+    environment:
+      - ETCD_ENDPOINTS=http://etcd:2379
+#    depends_on:
+#      - etcd
+#    extra_hosts:
+#      - "etcd:"
     volumes:
-      - ./dashboard.yaml:/usr/local/apisix-dashboard/conf/dashboard.yaml
+      - ./dashboard.yaml:/usr/local/apisix-dashboard/conf/conf.yaml
     networks:
       - middleware-db_middleware-sail
