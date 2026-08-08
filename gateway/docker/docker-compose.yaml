@@ -22,15 +22,11 @@ services:
   apisix-dashboard:
     image: apache/apisix-dashboard:latest
     container_name: apisix-dashboard
-#    restart: always
+    restart: always
     ports:
       - "9000:9000"
     environment:
       - ETCD_ENDPOINTS=http://etcd:2379
-#    depends_on:
-#      - etcd
-#    extra_hosts:
-#      - "etcd:"
     volumes:
       - ./dashboard.yaml:/usr/local/apisix-dashboard/conf/conf.yaml
     networks:
