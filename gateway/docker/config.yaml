@@ -55,6 +55,7 @@ plugins:
 - consumer-restriction
 - attach-consumer-label
 - forward-auth
+- umc-auth
 - opa
 - authz-keycloak
 - data-mask

@@ -14,5 +14,6 @@ services:
       - "9443:9443/tcp"
     volumes:
       - ./config.yaml:/usr/local/apisix/conf/config.yaml
+      - ./plugins/umc-auth.lua:/usr/local/apisix/apisix/plugins/umc-auth.lua
     networks:
       - middleware-db_middleware-sail
