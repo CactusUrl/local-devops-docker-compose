@@ -1,0 +1,326 @@
+name: fastgpt
+
+# FastGPT v4.15 Milvus deployment. Existing middleware is reached through the
+# external middleware-db_middleware-sail network; this stack does not duplicate it.
+x-default-root-psw: &default-root-psw "2c6fd40af767ff676c84001acf3ef830acdfc5131f88af2d"
+x-fe-domain: &fe-domain "http://localhost:3000"
+x-system-key: &system-key "ccc0a65fbd6ecc6c63ac04f1d96cfab8346f0305592b0600"
+x-file-token-key: &file-token-key "12dbcaa972bc382c264040bb89f459bd83221ca7098e2ec8"
+x-aes256-secret-key: &aes256-secret-key "ade560ec2dabfd3ea400e2b7bbe00767e0c0041c2c2c5114"
+x-invoke-token-secret: &invoke-token-secret "9aa6152a36ecd373513a3f91f6134726f77e0c0592c1bfb2"
+x-plugin-auth-token: &plugin-auth-token "680998da2e7e1012421d91c03b652158279b2a22a5058b22"
+x-code-sandbox-token: &code-sandbox-token "aa707cfe4f80571f2a1bede7b1a7e32098137355e74a7e05"
+x-agent-sandbox-secret: &agent-sandbox-secret "eff9d5a7029ed14c39d8393d12d2a34278c15b7d5ea5c83d"
+x-volume-manager-token: &volume-manager-token "8131554b29d49c981bafb6b6c41b9b5406b8f04546da28f7"
+x-aiproxy-token: &aiproxy-token "3d57e10d39c786922df1a80a123a667df40a503140a8c3bc"
+x-opensandbox-key: &opensandbox-key "092a004a163df868491723fc2e6cfe5c094359e42feba13a"
+
+x-database-config: &database-config
+  MONGODB_URI: "mongodb://root:wera87914Ls@mongodb:27017/fastgpt?authSource=admin&replicaSet=rs0"
+  REDIS_URL: "redis://default:sdfoYSF%24%25asdf@redis:6379"
+  STORAGE_VENDOR: minio
+  STORAGE_REGION: us-east-1
+  STORAGE_ACCESS_KEY_ID: minioadmin
+  STORAGE_SECRET_ACCESS_KEY: MinQW2718
+  STORAGE_PUBLIC_BUCKET: fastgpt-public
+  STORAGE_PRIVATE_BUCKET: fastgpt-private
+  STORAGE_DOWNLOAD_URL_MODE: short-proxy
+  STORAGE_S3_ENDPOINT: http://minio:9000
+  STORAGE_S3_FORCE_PATH_STYLE: "true"
+  STORAGE_S3_MAX_RETRIES: "3"
+
+x-vector-config: &vector-config
+  MILVUS_ADDRESS: http://milvus:19530
+  MILVUS_TOKEN: none
+
+x-log-config: &log-config
+  LOG_ENABLE_CONSOLE: "true"
+  LOG_CONSOLE_LEVEL: info
+  LOG_ENABLE_OTEL: "false"
+  METRICS_ENABLE_OTEL: "false"
+  TRACING_ENABLE_OTEL: "false"
+
+x-no-proxy-config: &no-proxy-config
+  NO_PROXY: localhost,127.0.0.1,::1,mongodb,redis,minio,milvus,pgvector,fastgpt-app,fastgpt-plugin,fastgpt-code-sandbox,fastgpt-mcp-server,fastgpt-aiproxy,fastgpt-opensandbox-server,fastgpt-volume-manager,fastgpt-agent-sandbox-proxy,host.docker.internal
+  no_proxy: localhost,127.0.0.1,::1,mongodb,redis,minio,milvus,pgvector,fastgpt-app,fastgpt-plugin,fastgpt-code-sandbox,fastgpt-mcp-server,fastgpt-aiproxy,fastgpt-opensandbox-server,fastgpt-volume-manager,fastgpt-agent-sandbox-proxy,host.docker.internal
+
+x-json-logging: &json-logging
+  driver: json-file
+  options:
+    max-size: "20m"
+    max-file: "3"
+
+services:
+  fastgpt-code-sandbox:
+    image: registry.cn-hangzhou.aliyuncs.com/fastgpt/fastgpt-code-sandbox:v4.15.7
+    container_name: fastgpt-code-sandbox
+    restart: always
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - codesandbox
+    environment:
+      <<: [*log-config, *no-proxy-config]
+      TZ: Asia/Shanghai
+      SANDBOX_TOKEN: *code-sandbox-token
+      SANDBOX_API_MAX_BODY_MB: "8"
+      SANDBOX_MAX_TIMEOUT: "60000"
+      SANDBOX_MAX_MEMORY_MB: "256"
+      SANDBOX_MAX_OUTPUT_MB: "10"
+      SANDBOX_POOL_SIZE: "20"
+      CHECK_INTERNAL_IP: "true"
+      SANDBOX_REQUEST_MAX_COUNT: "30"
+      SANDBOX_REQUEST_TIMEOUT: "60000"
+      SANDBOX_REQUEST_MAX_RESPONSE_MB: "10"
+      SANDBOX_REQUEST_MAX_BODY_MB: "5"
+      SANDBOX_JS_ALLOWED_MODULES: lodash,dayjs,moment,uuid,crypto-js,qs,url,querystring
+      SANDBOX_PYTHON_ALLOWED_MODULES: math,decimal,random,statistics,collections,itertools,functools,string,re,datetime,time,json,csv,base64,hashlib,uuid,numpy,pandas,matplotlib
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 20s
+      retries: 5
+      start_period: 20s
+    logging: *json-logging
+
+  fastgpt-plugin:
+    image: registry.cn-hangzhou.aliyuncs.com/fastgpt/fastgpt-plugin:v1.0.3
+    container_name: fastgpt-plugin
+    restart: always
+    networks:
+      - middleware
+      - app
+    environment:
+      <<: [*database-config, *log-config, *no-proxy-config]
+      TZ: Asia/Shanghai
+      MONGODB_URI: "mongodb://root:wera87914Ls@mongodb:27017/fastgpt-plugin?authSource=admin&replicaSet=rs0"
+      DB_MAX_LINK: "100"
+      AUTH_TOKEN: *plugin-auth-token
+      FASTGPT_BASE_URL: http://fastgpt-app:3000
+      SERVICE_REQUEST_MAX_CONTENT_LENGTH: "10"
+      MAX_API_SIZE: "10"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 20s
+      retries: 5
+      start_period: 20s
+    logging: *json-logging
+
+  fastgpt-aiproxy:
+    image: registry.cn-hangzhou.aliyuncs.com/labring/aiproxy:v0.6.5
+    container_name: fastgpt-aiproxy
+    restart: unless-stopped
+    networks:
+      - middleware
+      - app
+    environment:
+      TZ: Asia/Shanghai
+      ADMIN_KEY: *aiproxy-token
+      LOG_DETAIL_STORAGE_HOURS: "1"
+      SQL_DSN: postgres://postgres:5432pgLEQ@pgvector:5432/aiproxy
+      RETRY_TIMES: "3"
+      BILLING_ENABLED: "false"
+      DISABLE_MODEL_CONFIG: "true"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/status"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    logging: *json-logging
+
+  fastgpt-app:
+    image: registry.cn-hangzhou.aliyuncs.com/fastgpt/fastgpt:v4.15.8
+    container_name: fastgpt-app
+    restart: always
+    ports:
+      - "3000:3000"
+    networks:
+      - middleware
+      - app
+      - codesandbox
+    depends_on:
+      fastgpt-code-sandbox:
+        condition: service_healthy
+      fastgpt-plugin:
+        condition: service_healthy
+      fastgpt-aiproxy:
+        condition: service_healthy
+    environment:
+      <<: [*database-config, *vector-config, *log-config, *no-proxy-config]
+      TZ: Asia/Shanghai
+      HOSTNAME: 0.0.0.0
+      FE_DOMAIN: *fe-domain
+      DEFAULT_ROOT_PSW: *default-root-psw
+      SYSTEM_NAME: FastGPT
+      ROOT_KEY: *system-key
+      FILE_TOKEN_KEY: *file-token-key
+      AES256_SECRET_KEY: *aes256-secret-key
+      INVOKE_TOKEN_SECRET: *invoke-token-secret
+      PLUGIN_BASE_URL: http://fastgpt-plugin:3000
+      PLUGIN_TOKEN: *plugin-auth-token
+      CODE_SANDBOX_URL: http://fastgpt-code-sandbox:3000
+      CODE_SANDBOX_TOKEN: *code-sandbox-token
+      AIPROXY_API_ENDPOINT: http://fastgpt-aiproxy:3000
+      AIPROXY_API_TOKEN: *aiproxy-token
+      AGENT_SANDBOX_PROVIDER: opensandbox
+      AGENT_SANDBOX_PROXY_SECRET: *agent-sandbox-secret
+      AGENT_SANDBOX_PROXY_URL: ws://localhost:3006
+      AGENT_SANDBOX_OPENSANDBOX_BASEURL: http://fastgpt-opensandbox-server:8090
+      AGENT_SANDBOX_OPENSANDBOX_API_KEY: *opensandbox-key
+      AGENT_SANDBOX_OPENSANDBOX_RUNTIME: docker
+      AGENT_SANDBOX_OPENSANDBOX_IMAGE_REPO: registry.cn-hangzhou.aliyuncs.com/fastgpt/fastgpt-agent-sandbox
+      AGENT_SANDBOX_OPENSANDBOX_IMAGE_TAG: v0.2.0
+      AGENT_SANDBOX_OPENSANDBOX_USE_SERVER_PROXY: "true"
+      AGENT_SANDBOX_OPENSANDBOX_VOLUME_MANAGER_URL: http://fastgpt-volume-manager:3000
+      AGENT_SANDBOX_OPENSANDBOX_VOLUME_MANAGER_TOKEN: *volume-manager-token
+      AGENT_SANDBOX_DISK_MB: "1024"
+      AGENT_SANDBOX_MAX_EDIT_DEBUG: "100"
+      AGENT_SANDBOX_ENTRYPOINT_TIMEOUT_SECONDS: "30"
+      AGENT_SANDBOX_WS_MAX_MESSAGE_BYTES: "67108864"
+      AGENT_SANDBOX_WS_MAX_FRAME_BYTES: "16777216"
+      MARKETPLACE_URL: https://v2.marketplace.fastgpt.cn
+      SSE_MCP_SERVER_PROXY_ENDPOINT: http://localhost:3003
+      DB_MAX_LINK: "20"
+      SYNC_INDEX: "true"
+      AUTH_COOKIE_SECURE: "false"
+      CHECK_INTERNAL_IP: "false"
+      AGENT_ENGINE: fastAgent
+      PARSE_FILE_WORKERS: "5"
+      DATASET_PARSE_MAX_PROCESS: "10"
+      VECTOR_MAX_PROCESS: "10"
+      QA_MAX_PROCESS: "10"
+      VLM_MAX_PROCESS: "10"
+      HNSW_EF_SEARCH: "100"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000').then(r=>{if(r.status>=500)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    logging: *json-logging
+
+  fastgpt-mcp-server:
+    image: registry.cn-hangzhou.aliyuncs.com/fastgpt/fastgpt-mcp_server:v4.14.23
+    container_name: fastgpt-mcp-server
+    restart: always
+    ports:
+      - "3003:3000"
+    networks:
+      - app
+    depends_on:
+      fastgpt-app:
+        condition: service_healthy
+    environment:
+      <<: [*log-config, *no-proxy-config]
+      TZ: Asia/Shanghai
+      FASTGPT_ENDPOINT: http://fastgpt-app:3000
+    logging: *json-logging
+
+  fastgpt-opensandbox-server:
+    image: sandbox-registry.cn-zhangjiakou.cr.aliyuncs.com/opensandbox/server:v0.2.0
+    container_name: fastgpt-opensandbox-server
+    restart: always
+    networks:
+      - app
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    configs:
+      - source: opensandbox-config
+        target: /etc/opensandbox/config.toml
+    environment:
+      <<: *no-proxy-config
+      TZ: Asia/Shanghai
+      SANDBOX_CONFIG_PATH: /etc/opensandbox/config.toml
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8090/health',timeout=3).status==200 else 1)"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    logging: *json-logging
+
+  fastgpt-volume-manager:
+    image: registry.cn-hangzhou.aliyuncs.com/fastgpt/fastgpt-agent-volume-manager:v0.2.0
+    container_name: fastgpt-volume-manager
+    restart: always
+    networks:
+      - app
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      <<: *no-proxy-config
+      TZ: Asia/Shanghai
+      PORT: "3000"
+      VM_RUNTIME: docker
+      VM_AUTH_TOKEN: *volume-manager-token
+      VM_LOG_LEVEL: info
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging: *json-logging
+
+  fastgpt-agent-sandbox-proxy:
+    image: registry.cn-hangzhou.aliyuncs.com/fastgpt/fastgpt-agent-sandbox-proxy:v0.2.0
+    container_name: fastgpt-agent-sandbox-proxy
+    restart: always
+    ports:
+      - "3006:1006"
+    networks:
+      - app
+    environment:
+      <<: *no-proxy-config
+      TZ: Asia/Shanghai
+      PORT: "1006"
+      AGENT_SANDBOX_PROXY_SECRET: *agent-sandbox-secret
+      FASTGPT_APP_URL: http://fastgpt-app:3000
+      FASTGPT_APP_REQUEST_TIMEOUT_SECS: "60"
+      RUST_LOG: info,fastgpt_agent_sandbox_proxy=info
+    logging: *json-logging
+
+  opensandbox-agent-sandbox-image:
+    image: registry.cn-hangzhou.aliyuncs.com/fastgpt/fastgpt-agent-sandbox:v0.2.0
+    profiles: [prepull]
+
+  opensandbox-execd-image:
+    image: sandbox-registry.cn-zhangjiakou.cr.aliyuncs.com/opensandbox/execd:v1.0.21
+    profiles: [prepull]
+
+  opensandbox-egress-image:
+    image: sandbox-registry.cn-zhangjiakou.cr.aliyuncs.com/opensandbox/egress:v1.1.4
+    profiles: [prepull]
+
+networks:
+  middleware:
+    external: true
+    name: middleware-db_middleware-sail
+  app:
+    name: fastgpt_app
+  codesandbox:
+    name: fastgpt_codesandbox
+
+configs:
+  opensandbox-config:
+    content: |
+      [server]
+      host = "0.0.0.0"
+      port = 8090
+      api_key = "092a004a163df868491723fc2e6cfe5c094359e42feba13a"
+      log_level = "INFO"
+
+      [runtime]
+      type = "docker"
+      execd_image = "sandbox-registry.cn-zhangjiakou.cr.aliyuncs.com/opensandbox/execd:v1.0.21"
+
+      [egress]
+      image = "sandbox-registry.cn-zhangjiakou.cr.aliyuncs.com/opensandbox/egress:v1.1.4"
+
+      [docker]
+      network_mode = "bridge"
+      host_ip = "host.docker.internal"
+
+      [ingress]
+      mode = "direct"

@@ -56,6 +56,7 @@ services:
   mongo-db:
     image: mongo:8.0
     container_name: mongodb
+    command: [ "mongod", "--replSet", "rs0", "--keyFile", "/data/db/mongodb.key", "--bind_ip_all" ]
     restart: always
     ports:
       - "${MONGO_DB_PORT}:27017"
@@ -68,7 +69,7 @@ services:
     networks:
       - middleware-db_middleware-sail
     healthcheck:
-      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')", "-u", "${MONGO_DB_USER:-root}", "-p", "${MONGO_DB_PASSSWORD:-wera87914Ls}", "--authenticationDatabase", "admin" ]
+      test: [ "CMD", "mongosh", "--quiet", "--eval", "quit(db.hello().isWritablePrimary ? 0 : 1)", "-u", "${MONGO_DB_USER:-root}", "-p", "${MONGO_DB_PASSSWORD:-wera87914Ls}", "--authenticationDatabase", "admin" ]
       retries: 3
       timeout: 8s
   etcd:
