@@ -94,6 +94,93 @@ services:
     networks:
       - middleware-db_middleware-sail
 
+  pgvector:
+    image: pgvector/pgvector:pg16
+    container_name: pgvector
+    restart: always
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-5432pgLEQ}"
+      POSTGRES_DB: fastgpt
+      TZ: Asia/Shanghai
+    volumes:
+      - '${DATA_PATH}/pgvector:/var/lib/postgresql/data'
+    networks:
+      - middleware-db_middleware-sail
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d fastgpt" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    restart: always
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: "${MINIO_ROOT_PASSWORD:-MinQW2718}"
+    volumes:
+      - '${DATA_PATH}/minio:/data'
+    command: server /data --console-address ":9001"
+    networks:
+      - middleware-db_middleware-sail
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+  milvus:
+    image: milvusdb/milvus:v3.0.0
+    container_name: milvus
+    command: [ "milvus", "run", "standalone" ]
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: "${MILVUS_MEMORY_LIMIT:-4g}"
+        reservations:
+          memory: "${MILVUS_MEMORY_RESERVATION:-2g}"
+    security_opt:
+      - seccomp:unconfined
+    ports:
+      - "19530:19530"
+      - "9091:9091"
+    environment:
+      ETCD_ENDPOINTS: etcd:2379
+      MINIO_ADDRESS: minio:9000
+      MINIO_ACCESS_KEY_ID: minioadmin
+      MINIO_SECRET_ACCESS_KEY: "${MINIO_ROOT_PASSWORD:-MinQW2718}"
+      MINIO_BUCKET_NAME: milvus-bucket
+      MQ_TYPE: woodpecker
+      LOG_LEVEL: "${MILVUS_LOG_LEVEL:-warn}"
+      common.storage.useLoonFFI: "false"
+      knowhere.enable: "true"
+      dataCoord.targetVecIndexVersion: "10"
+      dataCoord.targetScalarIndexVersion: "4"
+    volumes:
+      - '${DATA_PATH}/milvus:/var/lib/milvus'
+    depends_on:
+      - etcd
+      - minio
+    networks:
+      - middleware-db_middleware-sail
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9091/healthz" ]
+      interval: 30s
+      start_period: 90s
+      timeout: 20s
+      retries: 5
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "3"
 
 networks:
   middleware-db_middleware-sail:
