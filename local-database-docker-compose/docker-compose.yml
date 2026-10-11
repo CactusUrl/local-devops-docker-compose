@@ -38,6 +38,42 @@ services:
       test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       retries: 3
       timeout: 5s
+  es:
+    image: 'docker.elastic.co/elasticsearch/elasticsearch:${ES_VERSION:-9.5.5}'
+    container_name: gaia-elasticsearch
+    restart: unless-stopped
+    environment:
+      node.name: gaia-es-01
+      cluster.name: gaia-search-local
+      discovery.type: single-node
+      # Local development only; host access is restricted to loopback below.
+      xpack.security.enabled: 'false'
+      xpack.security.enrollment.enabled: 'false'
+      node.store.allow_mmap: 'false'
+      ES_JAVA_OPTS: '${ES_JAVA_OPTS:--Xms1g -Xmx1g}'
+      TZ: Asia/Shanghai
+    mem_limit: '${ES_MEMORY_LIMIT:-2g}'
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    ports:
+      - '127.0.0.1:${ES_PORT:-9200}:9200'
+    volumes:
+      - '${DATA_PATH}/elasticsearch:/usr/share/elasticsearch/data'
+    networks:
+      - middleware-db_middleware-sail
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS 'http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=5s' >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 10s
+      start_period: 60s
+      retries: 10
+    logging:
+      driver: json-file
+      options:
+        max-size: '20m'
+        max-file: '3'
   rabbit-mq:
     image: 'rabbitmq:3.13-management'
     container_name: "rabbit-3.13"
