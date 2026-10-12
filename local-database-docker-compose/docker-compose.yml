@@ -40,7 +40,7 @@ services:
       timeout: 5s
   es:
     image: 'docker.elastic.co/elasticsearch/elasticsearch:${ES_VERSION:-9.5.5}'
-    container_name: gaia-elasticsearch
+    container_name: elasticsearch
     restart: unless-stopped
     environment:
       node.name: gaia-es-01
