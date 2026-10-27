@@ -130,7 +130,6 @@ services:
       --log-outputs stderr
     networks:
       - middleware-db_middleware-sail
-
   pgvector:
     image: pgvector/pgvector:pg16
     container_name: pgvector
@@ -151,7 +150,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
   minio:
     image: minio/minio:latest
     container_name: minio
@@ -173,7 +171,7 @@ services:
       timeout: 20s
       retries: 3
   milvus:
-    image: milvusdb/milvus:v3.0.0
+    image: milvusdb/milvus:v3.0.3
     container_name: milvus
     command: [ "milvus", "run", "standalone" ]
     restart: always
