@@ -12,4 +12,4 @@
 - 对应up命令
   `docker-compose -p middleware-db up -d`
 - 对应remove命令
-  `docker-compose down`
+  `docker-compose down -p middleware-db`

@@ -7,9 +7,9 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: '${DB_ROOT_PASSWORD}'
       MYSQL_ROOT_HOST: '%'
-      MYSQL_DATABASE: '${DB_DATABASE}'
-      MYSQL_USER: '${DB_USERNAME}'
-      MYSQL_PASSWORD: '${DB_PASSWORD}'
+      MYSQL_DATABASE: '${MYSQL_DB_DATABASE:-test}'
+      MYSQL_USER: '${MYSQL_OPS_USERNAME}'
+      MYSQL_PASSWORD: '${MYSQL_OPS_PASSWORD}'
       MYSQL_ALLOW_EMPTY_PASSWORD: 1
       TZ: Asia/Shanghai
     volumes:
@@ -19,7 +19,7 @@ services:
     networks:
       - middleware-db_middleware-sail
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-p${DB_PASSWORD}"]
+      test: ["CMD", "mysqladmin", "ping", "-p${MYSQL_OPS_PASSWORD}"]
       retries: 3
       timeout: 5s
   redis:
@@ -200,7 +200,7 @@ services:
       dataCoord.targetVecIndexVersion: "10"
       dataCoord.targetScalarIndexVersion: "4"
       common.security.authorizationEnabled: "true"
-      common.security.defaultRootPassword: "${MILVUS_ROOT_PASSWORD:-1027&!adminqt}"
+      common.security.defaultRootPassword: "${MILVUS_ROOT_PASSWORD:-1027&!adminQtok}"
     volumes:
       - '${DATA_PATH}/milvus:/var/lib/milvus'
     depends_on:
