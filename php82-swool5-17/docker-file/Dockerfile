@@ -1,4 +1,4 @@
-FROM php:8.2.27-alpine3.20
+FROM php:8.2.35-alpine3.20
 
 ENV WEB_ROOT=/webser/www LOG_PATH=/webser/logs DATA_PATH=/webser/data RUNTIME_PATH=/webser/runtime
 
