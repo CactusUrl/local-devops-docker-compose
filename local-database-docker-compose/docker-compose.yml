@@ -44,7 +44,7 @@ services:
     restart: unless-stopped
     environment:
       node.name: gaia-es-01
-      cluster.name: gaia-search-local
+      cluster.name: es-search-local
       discovery.type: single-node
       # Local development only; host access is restricted to loopback below.
       xpack.security.enabled: 'false'
@@ -227,7 +227,6 @@ services:
   #   1. 环境变量由 MILVUS_URL 改为 MILVUS_ADDRESS
   #   2. 官方 tag 是 v3.0.0，不是 v3.0
   #   3. 仅支持 Milvus 2.6.0+ / 3.x 及 Zilliz Cloud（Milvus 2.5.x 及以下不支持）
-  #   4. 容器监听端口为 3000（v3 默认），数据落在 /data/attu.db
   # ===============================================================
   attu:
     image: zilliz/attu:v3.0.0
