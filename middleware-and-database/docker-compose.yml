@@ -199,6 +199,8 @@ services:
       knowhere.enable: "true"
       dataCoord.targetVecIndexVersion: "10"
       dataCoord.targetScalarIndexVersion: "4"
+      common.security.authorizationEnabled: "true"
+      common.security.defaultRootPassword: "${MILVUS_ROOT_PASSWORD:-1027&!adminqt}"
     volumes:
       - '${DATA_PATH}/milvus:/var/lib/milvus'
     depends_on:
