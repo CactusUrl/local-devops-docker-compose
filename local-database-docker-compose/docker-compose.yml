@@ -219,6 +219,36 @@ services:
       options:
         max-size: "20m"
         max-file: "3"
+  # ===============================================================
+  # Attu v3.0 ?? Milvus 可视化管理工具
+  # 官方仓库: https://github.com/zilliztech/attu
+  #
+  # ?? v3 关键变更（与 v2 不兼容）：
+  #   1. 环境变量由 MILVUS_URL 改为 MILVUS_ADDRESS
+  #   2. 官方 tag 是 v3.0.0，不是 v3.0
+  #   3. 仅支持 Milvus 2.6.0+ / 3.x 及 Zilliz Cloud（Milvus 2.5.x 及以下不支持）
+  #   4. 容器监听端口为 3000（v3 默认），数据落在 /data/attu.db
+  # ===============================================================
+  attu:
+    image: zilliz/attu:v3.0.0
+    container_name: attu
+    ports:
+      - "3000:3000"
+    environment:
+      # 日志级别（Pino）：debug / info / warn / error
+      - LOG_LEVEL=info
+      # 审计日志保留天数；<=0 表示不自动清理
+      - ATTU_AUDIT_RETENTION_DAYS=90
+      # Milvus gRPC 请求超时（毫秒）
+      - MILVUS_GRPC_TIMEOUT=15000
+    volumes:
+      # 持久化 SQLite（/data/attu.db）：保存连接、AI 会话、偏好设置。
+      - '${DATA_PATH}/attu:/data'
+    # ---------- 资源限制（按需调整或删除）----------
+    mem_limit: 1g
+    mem_reservation: 512m
+    cpus: "1.0"
+    restart: unless-stopped
 
 networks:
   middleware-db_middleware-sail:
